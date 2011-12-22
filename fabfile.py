@@ -25,11 +25,6 @@ DJANGO_APP_DIR = '/home/foo/webapps/myapp_django/' ## CHANGEME!
 # that is used on the server.
 STATIC_APP_DIR = '/home/foo/webapps/myapp_static/' ## CHANGEME!
 
-
-# Directory where user uploaded media files should be stored
-# Corresponds to MEDIA_ROOT Django setting, and should be mapped to MEDIA_URL
-USERMEDIA_APP_DIR = '/home/foo/webapps/myapp_usermedia/' ## CHANGEME!
-
 # Subdirectory of DJANGO_APP_DIR in which project sources will be stored
 SRC_SUBDIR = 'src'
 
