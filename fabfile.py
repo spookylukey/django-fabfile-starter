@@ -18,17 +18,16 @@ from fabric.context_managers import cd, lcd, settings, hide
 env.hosts = ['foo@foo.com'] ## CHANGEME!
 
 # Directory where everything to do with this app will be stored on the server.
-DJANGO_APP_DIR = '/home/foo/webapps/myapp_django/' ## CHANGEME!
+DJANGO_APP_ROOT = '/home/foo/webapps/myapp_django/' ## CHANGEME!
 
-# Directory where static sources should be collected.
-# This must correspond to the value of STATIC_ROOT in the settings.py
-# that is used on the server.
-STATIC_APP_DIR = '/home/foo/webapps/myapp_static/' ## CHANGEME!
+# Directory where static sources should be collected.  This must equal the value
+# of STATIC_ROOT in the settings.py that is used on the server.
+STATIC_ROOT = '/home/foo/webapps/myapp_static/' ## CHANGEME!
 
-# Subdirectory of DJANGO_APP_DIR in which project sources will be stored
+# Subdirectory of DJANGO_APP_ROOT in which project sources will be stored
 SRC_SUBDIR = 'src'
 
-# Subdirectory of DJANGO_APP_DIR in which virtualenv will be stored
+# Subdirectory of DJANGO_APP_ROOT in which virtualenv will be stored
 VENV_SUBDIR = 'venv'
 
 # Python version
@@ -39,12 +38,12 @@ PYTHON_FULL_PATH = "%s/bin/%s" % (PYTHON_PREFIX, PYTHON_BIN) if PYTHON_PREFIX el
 
 # Commands to stop and start the webserver that is serving the Django app.
 # CHANGEME!  These defaults work for Webfaction
-DJANGO_SERVER_STOP = posixpath.join(DJANGO_APP_DIR, 'apache2', 'bin', 'stop')
-DJANGO_SERVER_START = posixpath.join(DJANGO_APP_DIR, 'apache2', 'bin', 'start')
+DJANGO_SERVER_STOP = posixpath.join(DJANGO_APP_ROOT, 'apache2', 'bin', 'stop')
+DJANGO_SERVER_START = posixpath.join(DJANGO_APP_ROOT, 'apache2', 'bin', 'start')
 DJANGO_SERVER_RESTART = None
 
-src_dir = posixpath.join(DJANGO_APP_DIR, SRC_SUBDIR)
-venv_dir = posixpath.join(DJANGO_APP_DIR, VENV_SUBDIR)
+src_dir = posixpath.join(DJANGO_APP_ROOT, SRC_SUBDIR)
+venv_dir = posixpath.join(DJANGO_APP_ROOT, VENV_SUBDIR)
 
 
 def virtualenv(venv_dir):
@@ -73,7 +72,7 @@ def ensure_virtualenv():
     if exists(venv_dir):
         return
 
-    with cd(DJANGO_APP_DIR):
+    with cd(DJANGO_APP_ROOT):
         run("virtualenv --no-site-packages --python=%s %s" %
             (PYTHON_BIN, VENV_SUBDIR))
         run("echo %s > %s/lib/%s/site-packages/projectsource.pth" %
@@ -132,15 +131,15 @@ def webserver_restart():
 
 
 def build_static():
-    assert STATIC_APP_DIR.strip() != '' and STATIC_APP_DIR.strip() != '/'
+    assert STATIC_ROOT.strip() != '' and STATIC_ROOT.strip() != '/'
     # Before Django 1.4 we don't have the --clear option to collectstatic
-    run("rm -rf %s/*" % STATIC_APP_DIR)
+    run("rm -rf %s/*" % STATIC_ROOT)
 
     with virtualenv(venv_dir):
         with cd(src_dir):
             run_venv("./manage.py collectstatic -v 0 --noinput")
 
-    run("chmod -R ugo+r %s" % STATIC_APP_DIR)
+    run("chmod -R ugo+r %s" % STATIC_ROOT)
 
 
 @task
