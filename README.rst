@@ -24,10 +24,11 @@ The fabfile assumes:
   - SSH setup for logging in (and you've set up your developer machine
     for passwordless login).
 
-  - database installed etc., and you will use some other system
-    to create your Django database
+  - database server installed etc., and database created
 
   - Python is installed
+
+  - A webserver for your Django app is installed and configured.
 
 - use of virtualenv to isolate the environment. You will need to have virtualenv
   available on your server. For maximum isolation, virtualenv is run with
@@ -68,7 +69,7 @@ The fabfile assumes:
 - deployment to a POSIX server. (Uses posixpath for path manipulation)
 
 - you can cope with some downtime when deploying, which is needed to update
-  source, dependencies and run migrations.
+  sources, dependencies and run migrations.
 
 
 Usage
