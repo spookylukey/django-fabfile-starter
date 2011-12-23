@@ -38,12 +38,19 @@ The fabfile assumes:
 - a project layout like this:
 
   - some_dir/  - directory containing all sources, under source control
+
     - fabfile.py
+
     - manage.py
+
     - top level Python package directories. For example:
+
     - myproject/
+
     - myproject/__init__.py
+
     - myapp/
+
     - etc.
 
 - settings.py on the server that correctly defines and separates STATIC_ROOT and
