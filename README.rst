@@ -14,7 +14,7 @@ Requirements
 
 The fabfile assumes:
 
-- you are using Django 1.3 or greater
+- you are using Django 1.4 or greater
 
 - you have your development environment already setup, including
   having 'fabric' installed.
@@ -27,8 +27,6 @@ The fabfile assumes:
   - database server installed etc., and database created
 
   - Python is installed
-
-  - A webserver for your Django app is installed and configured.
 
 - use of virtualenv to isolate the environment. You will need to have virtualenv
   available on your server. For maximum isolation, virtualenv is run with
@@ -50,6 +48,8 @@ The fabfile assumes:
 
     - myproject/__init__.py
 
+    - myproject/wsgi.py
+
     - myapp/
 
     - etc.
@@ -61,7 +61,10 @@ The fabfile assumes:
 - manage.py loads the correct settings.py when run on the server.
 
 - use of a pip 'requirements.txt' for installation of Python packages, in the
-  same directory as the fabfile. It should contain at least Django and south.
+  same directory as the fabfile. It should contain at least:
+  * Django
+  * south
+  * gunicorn
 
 - use of Mercurial for source control, requiring hg to be installed on
   your server. (This could be easily modified to use git).
@@ -82,6 +85,8 @@ Use 'fab deploy' to deploy.
 You might want to do 'fab first_deployment_mode deploy' for the first deployment.
 
 Use 'fab -l' to see other commands
+
+
 
 Tips
 ----
