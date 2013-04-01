@@ -19,6 +19,8 @@ from fabric.context_managers import cd, lcd, settings, hide
 USER = 'foo'
 HOST = 'foo.com'
 APP_NAME = 'myapp'
+APP_PORT = 30123
+GUNICORN_WORKERS = 1
 
 # Host and login username:
 env.hosts = ['%s@%s' % (USER, HOST)]
@@ -41,14 +43,13 @@ PYTHON_BIN = "python2.7"
 PYTHON_PREFIX = "" # e.g. /usr/local  Use "" for automatic
 PYTHON_FULL_PATH = "%s/bin/%s" % (PYTHON_PREFIX, PYTHON_BIN) if PYTHON_PREFIX else PYTHON_BIN
 
+GUNICORN_PIDFILE = "%s/gunicorn.pid" % DJANGO_APP_ROOT
+GUNICORN_LOGFILE = "/home/%s/logs/user/gunicorn_%s.log" % (USER, APP_NAME)
 
-# Commands to stop and start the webserver that is serving the Django app.
-DJANGO_SERVER_STOP = posixpath.join(DJANGO_APP_ROOT, 'apache2', 'bin', 'stop')
-DJANGO_SERVER_START = posixpath.join(DJANGO_APP_ROOT, 'apache2', 'bin', 'start')
-DJANGO_SERVER_RESTART = None
+SRC_DIR = posixpath.join(DJANGO_APP_ROOT, SRC_SUBDIR)
+VENV_DIR = posixpath.join(DJANGO_APP_ROOT, VENV_SUBDIR)
 
-src_dir = posixpath.join(DJANGO_APP_ROOT, SRC_SUBDIR)
-venv_dir = posixpath.join(DJANGO_APP_ROOT, VENV_SUBDIR)
+WSGI_MODULE = '%s.wsgi' % APP_NAME
 
 
 def virtualenv(venv_dir):
@@ -68,27 +69,27 @@ def run_venv(command, **kwargs):
 
 def install_dependencies():
     ensure_virtualenv()
-    with virtualenv(venv_dir):
-        with cd(src_dir):
+    with virtualenv(VENV_DIR):
+        with cd(SRC_DIR):
             run_venv("pip install -r requirements.txt")
 
 
 def ensure_virtualenv():
-    if exists(venv_dir):
+    if exists(VENV_DIR):
         return
 
     with cd(DJANGO_APP_ROOT):
         run("virtualenv --no-site-packages --python=%s %s" %
             (PYTHON_BIN, VENV_SUBDIR))
         run("echo %s > %s/lib/%s/site-packages/projectsource.pth" %
-            (src_dir, VENV_SUBDIR, PYTHON_BIN))
+            (SRC_DIR, VENV_SUBDIR, PYTHON_BIN))
 
 
 def ensure_src_dir():
-    if not exists(src_dir):
-        run("mkdir -p %s" % src_dir)
-    with cd(src_dir):
-        if not exists(posixpath.join(src_dir, '.hg')):
+    if not exists(SRC_DIR):
+        run("mkdir -p %s" % SRC_DIR)
+    with cd(SRC_DIR):
+        if not exists(posixpath.join(SRC_DIR, '.hg')):
             run("hg init")
 
 
@@ -112,9 +113,9 @@ def push_sources():
     local("hg push -f ssh://%(user)s@%(host)s/%(path)s || true" %
           dict(host=env.host,
                user=env.user,
-               path=src_dir,
+               path=SRC_DIR,
                ))
-    with cd(src_dir):
+    with cd(SRC_DIR):
         run("hg update %s" % push_rev)
 
 
@@ -123,7 +124,19 @@ def webserver_stop():
     """
     Stop the webserver that is running the Django instance
     """
-    run(DJANGO_SERVER_STOP)
+    run("kill $(cat %s)" % GUNICORN_PIDFILE)
+
+
+def _webserver_command():
+    return ("%(venv_dir)s/bin/gunicorn --log-file=%(logfile)s -b 127.0.0.1:%(port)s -D -w %(workers)s --pid %(pidfile)s %(wsgimodule)s:application" %
+            {'venv_dir': VENV_DIR,
+             'pidfile': GUNICORN_PIDFILE,
+             'wsgimodule': WSGI_MODULE,
+             'port': APP_PORT,
+             'workers': GUNICORN_WORKERS,
+             'logfile': GUNICORN_LOGFILE,
+             }
+            )
 
 
 @task
@@ -131,7 +144,15 @@ def webserver_start():
     """
     Starts the webserver that is running the Django instance
     """
-    run(DJANGO_SERVER_START)
+    run(_webserver_command())
+
+
+@task
+def local_webserver_start():
+    """
+    Starts the webserver that is running the Django instance, on the local machine
+    """
+    local(_webserver_command())
 
 
 @task
@@ -139,22 +160,16 @@ def webserver_restart():
     """
     Restarts the webserver that is running the Django instance
     """
-    if DJANGO_SERVER_RESTART:
-        run(DJANGO_SERVER_RESTART)
-    else:
-        with settings(warn_only=True):
-            webserver_stop()
+    try:
+        run("kill -HUP $(cat %s)" % GUNICORN_PIDFILE)
+    except:
         webserver_start()
 
 
 def build_static():
-    assert STATIC_ROOT.strip() != '' and STATIC_ROOT.strip() != '/'
-    # Before Django 1.4 we don't have the --clear option to collectstatic
-    run("rm -rf %s/*" % STATIC_ROOT)
-
-    with virtualenv(venv_dir):
-        with cd(src_dir):
-            run_venv("./manage.py collectstatic -v 0 --noinput")
+    with virtualenv(VENV_DIR):
+        with cd(SRC_DIR):
+            run_venv("./manage.py collectstatic -v 0 --noinput --clear")
 
     run("chmod -R ugo+r %s" % STATIC_ROOT)
 
@@ -168,8 +183,8 @@ def first_deployment_mode():
 
 
 def update_database():
-    with virtualenv(venv_dir):
-        with cd(src_dir):
+    with virtualenv(VENV_DIR):
+        with cd(SRC_DIR):
             if getattr(env, 'initial_deploy', False):
                 run_venv("./manage.py syncdb --all")
                 run_venv("./manage.py migrate --fake --noinput")
@@ -191,3 +206,4 @@ def deploy():
     build_static()
 
     webserver_start()
+
