@@ -24,11 +24,11 @@ APP_NAME = 'myapp'
 env.hosts = ['%s@%s' % (USER, HOST)]
 
 # Directory where everything to do with this app will be stored on the server.
-DJANGO_APP_ROOT = '/home/foo/webapps/%s_django/' % APP_NAME
+DJANGO_APP_ROOT = '/home/%s/webapps/%s_django' % (USER, APP_NAME)
 
 # Directory where static sources should be collected.  This must equal the value
 # of STATIC_ROOT in the settings.py that is used on the server.
-STATIC_ROOT = '/home/foo/webapps/%s_static/' % APP_NAME
+STATIC_ROOT = '/home/%s/webapps/%s_static/' % (USER, APP_NAME)
 
 # Subdirectory of DJANGO_APP_ROOT in which project sources will be stored
 SRC_SUBDIR = 'src'
