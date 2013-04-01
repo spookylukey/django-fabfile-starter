@@ -14,15 +14,21 @@ from fabric.decorators import runs_once
 from fabric.contrib.files import exists
 from fabric.context_managers import cd, lcd, settings, hide
 
+# CHANGEME:
+
+USER = 'foo'
+HOST = 'foo.com'
+APP_NAME = 'myapp'
+
 # Host and login username:
-env.hosts = ['foo@foo.com'] ## CHANGEME!
+env.hosts = ['%s@%s' % (USER, HOST)]
 
 # Directory where everything to do with this app will be stored on the server.
-DJANGO_APP_ROOT = '/home/foo/webapps/myapp_django/' ## CHANGEME!
+DJANGO_APP_ROOT = '/home/foo/webapps/%s_django/' % APP_NAME
 
 # Directory where static sources should be collected.  This must equal the value
 # of STATIC_ROOT in the settings.py that is used on the server.
-STATIC_ROOT = '/home/foo/webapps/myapp_static/' ## CHANGEME!
+STATIC_ROOT = '/home/foo/webapps/%s_static/' % APP_NAME
 
 # Subdirectory of DJANGO_APP_ROOT in which project sources will be stored
 SRC_SUBDIR = 'src'
@@ -37,7 +43,6 @@ PYTHON_FULL_PATH = "%s/bin/%s" % (PYTHON_PREFIX, PYTHON_BIN) if PYTHON_PREFIX el
 
 
 # Commands to stop and start the webserver that is serving the Django app.
-# CHANGEME!  These defaults work for Webfaction
 DJANGO_SERVER_STOP = posixpath.join(DJANGO_APP_ROOT, 'apache2', 'bin', 'stop')
 DJANGO_SERVER_START = posixpath.join(DJANGO_APP_ROOT, 'apache2', 'bin', 'start')
 DJANGO_SERVER_RESTART = None
