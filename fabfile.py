@@ -129,7 +129,7 @@ def webserver_stop():
 @task
 def webserver_start():
     """
-    Startsp the webserver that is running the Django instance
+    Starts the webserver that is running the Django instance
     """
     run(DJANGO_SERVER_START)
 
