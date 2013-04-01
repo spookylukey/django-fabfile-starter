@@ -87,18 +87,30 @@ def ensure_src_dir():
             run("hg init")
 
 
+@task
+def push_rev(rev):
+    """
+    Use the specified revision for deployment, instead of the current revision.
+    """
+    env.push_rev = rev
+
+
 def push_sources():
     """
-    Push source code to server
+    Push source code to server.
     """
     ensure_src_dir()
-    local("hg push -f ssh://%(user)s@%(host)s/%(path)s" %
+    push_rev = getattr(env, 'push_rev', None)
+    if push_rev is None:
+        push_rev = local("hg id", capture=True).split(" ")[0].strip().strip("+")
+
+    local("hg push -f ssh://%(user)s@%(host)s/%(path)s || true" %
           dict(host=env.host,
                user=env.user,
                path=src_dir,
                ))
     with cd(src_dir):
-        run("hg update")
+        run("hg update %s" % push_rev)
 
 
 @task
