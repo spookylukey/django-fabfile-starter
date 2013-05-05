@@ -17,7 +17,8 @@ The fabfile assumes:
 - you are using Django 1.4 or greater
 
 - you have your development environment already setup, including
-  having 'fabric' installed.
+  having 'fabric' installed. You also need 'psutils' installed,
+  and added to your requirements.txt for production.
 
 - your server is basically 'provisioned' i.e.
 
@@ -65,6 +66,7 @@ The fabfile assumes:
   * Django
   * south
   * gunicorn
+  * psutils
 
 - use of Mercurial for source control, requiring hg to be installed on
   your server. (This could be easily modified to use git).

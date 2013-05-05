@@ -13,6 +13,7 @@ from fabric.api import run, local, abort, env, put, settings, cd, task
 from fabric.decorators import runs_once
 from fabric.contrib.files import exists
 from fabric.context_managers import cd, lcd, settings, hide
+import psutil
 
 # CHANGEME:
 
@@ -125,6 +126,7 @@ def webserver_stop():
     Stop the webserver that is running the Django instance
     """
     run("kill $(cat %s)" % GUNICORN_PIDFILE)
+    run("rm %s" % GUNICORN_PIDFILE)
 
 
 def _webserver_command():
@@ -147,12 +149,26 @@ def webserver_start():
     run(_webserver_command())
 
 
+def _is_webserver_running():
+    try:
+        pid = int(open(GUNICORN_PIDFILE).read().strip())
+    except (IOError, OSError):
+        return False
+    for ps in psutil.process_iter():
+        if (ps.pid == pid and
+            any('gunicorn' in c for c in ps.cmdline)
+            and ps.username == USER):
+            return True
+    return False
+
+
 @task
 def local_webserver_start():
     """
     Starts the webserver that is running the Django instance, on the local machine
     """
-    local(_webserver_command())
+    if not _is_webserver_running():
+        local(_webserver_command())
 
 
 @task
