@@ -17,8 +17,7 @@ The fabfile assumes:
 - you are using Django 1.4 or greater
 
 - you have your development environment already setup, including
-  having 'fabric' installed. You also need 'psutils' installed,
-  and added to your requirements.txt for production.
+  having 'fabric' installed.
 
 - your server is basically 'provisioned' i.e.
 
@@ -63,10 +62,12 @@ The fabfile assumes:
 
 - use of a pip 'requirements.txt' for installation of Python packages, in the
   same directory as the fabfile. It should contain at least:
+
   * Django
   * south
   * gunicorn
-  * psutils
+  * psutil
+  * fabric
 
 - use of Mercurial for source control, requiring hg to be installed on
   your server. (This could be easily modified to use git).
@@ -88,7 +89,10 @@ You might want to do 'fab first_deployment_mode deploy' for the first deployment
 
 Use 'fab -l' to see other commands
 
+You should probably create a cronjob to ensure that the Gunicorn webserver is
+running. This can use fabric on the server and the command 'local_webserver_start':
 
+*/10     * * * *    /home/myuser/webapps/myapp_django/venv/bin/fab -f /home/myuser/webapps/myapp_django/src/fabfile.py local_webserver_start
 
 Tips
 ----

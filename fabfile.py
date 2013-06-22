@@ -9,8 +9,7 @@ defaults if you are happy with the default layout.
 
 import posixpath
 
-from fabric.api import run, local, abort, env, put, settings, cd, task
-from fabric.decorators import runs_once
+from fabric.api import run, local, abort, env, put, task
 from fabric.contrib.files import exists
 from fabric.context_managers import cd, lcd, settings, hide
 import psutil
@@ -149,6 +148,17 @@ def webserver_start():
     run(_webserver_command())
 
 
+@task
+def webserver_restart():
+    """
+    Restarts the webserver that is running the Django instance
+    """
+    try:
+        run("kill -HUP $(cat %s)" % GUNICORN_PIDFILE)
+    except:
+        webserver_start()
+
+
 def _is_webserver_running():
     try:
         pid = int(open(GUNICORN_PIDFILE).read().strip())
@@ -169,17 +179,6 @@ def local_webserver_start():
     """
     if not _is_webserver_running():
         local(_webserver_command())
-
-
-@task
-def webserver_restart():
-    """
-    Restarts the webserver that is running the Django instance
-    """
-    try:
-        run("kill -HUP $(cat %s)" % GUNICORN_PIDFILE)
-    except:
-        webserver_start()
 
 
 def build_static():
@@ -220,6 +219,5 @@ def deploy():
     install_dependencies()
     update_database()
     build_static()
-
     webserver_start()
 
