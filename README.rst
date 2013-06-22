@@ -44,15 +44,15 @@ The fabfile assumes:
 
     - top level Python package directories. For example:
 
-    - myproject/
+      - myproject/
 
-    - myproject/__init__.py
+      - myproject/__init__.py
 
-    - myproject/wsgi.py
+      - myproject/wsgi.py
 
-    - myapp/
+      - myapp/
 
-    - etc.
+      - etc.
 
 - settings.py on the server that correctly defines and separates STATIC_ROOT and
   MEDIA_ROOT. STATIC_ROOT is populated by the Django 'collectstatic' command,
