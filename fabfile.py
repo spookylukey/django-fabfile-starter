@@ -9,9 +9,9 @@ defaults if you are happy with the default layout.
 
 import posixpath
 
-from fabric.api import run, local, abort, env, put, task
+from fabric.api import run, local, env, task
 from fabric.contrib.files import exists
-from fabric.context_managers import cd, lcd, settings, hide
+from fabric.context_managers import cd, settings
 import psutil
 
 # CHANGEME:
